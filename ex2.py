@@ -1,5 +1,6 @@
 # Students	Refael  Greenfeld    Danit   Yshaayahu  305030868   312434269
 import sys
+import math
 from collections import defaultdict
 
 
@@ -9,6 +10,16 @@ def printify(num_output, answer):
 
 def clean_lines(lines):
     return lines[2::4]
+
+
+def perplexity(set_stat: defaultdict, lamb=None):
+    sum = 0
+    for w in set_stat.keys():
+        sum += math.log2(lidstone(w, set_stat, lamb))
+    prep_score = 2 ** (-(sum / len(set_stat)))
+    return prep_score
+
+
 
 
 def parse_file(dev_f):
@@ -97,10 +108,21 @@ def main():
 
     o14 = lidstone(input_word, training_stat, 0.1)
     o15 = lidstone("unseen-word", training_stat, 0.1)
-    res.append(printify(14, o14))
     res.append(printify(15, o15))
 
-    # preplexity()
+    lambda_option = [0.01, 0.1, 1]
+    o16 = perplexity(validation_stat, lambda_option[0])
+    o17 = perplexity(validation_stat, lambda_option[1])
+    o18 = perplexity(validation_stat, lambda_option[2])
+    res.append(printify(16, o16))
+    res.append(printify(17, o17))
+    res.append(printify(18, o18))
+    min_tup = min([(o16, lambda_option[0]), (o17, lambda_option[1]),(o18, lambda_option[2])], key=lambda x:x[0])
+    o19 = min_tup[1]
+    res.append(printify(19, o19))
+
+
+
 
     print_output(output_f, res)
 
