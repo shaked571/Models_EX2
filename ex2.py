@@ -3,7 +3,7 @@ import sys
 import math
 from collections import defaultdict
 
-DEBUG = False
+DEBUG = True
 VOCAB_SIZE = 300000
 
 
@@ -332,25 +332,36 @@ def main():
     res.append(printify(28, o28))
 
     # Creating table
-    create_r_table(h_stat, t_reverse_stat, t_stat, res)
+    create_r_table(h_stat, h_size, t_reverse_stat, t_stat, training_stat, best_lambda, res)
 
     # And.......DONE!
     print_output(output_f, res)
 
 
-def create_r_table(h_stat, t_reverse_stat, t_stat, res):
-    t_r_0 = get_unseen_held_out(h_stat, t_stat)
-    n_t_r = [VOCAB_SIZE - len(t_stat)]
+def create_r_table(h_stat, h_size, t_reverse_stat_ho, t_stat_ho, t_stat_lid, best_lambda, res):
+    t_r_0 = get_unseen_held_out(h_stat, t_stat_ho)
+    n_t_r = [VOCAB_SIZE - len(t_stat_ho)]
     t_r = [t_r_0]
 
-    for r in range(1, 10):
-        n_r = len(t_reverse_stat[r])
-        n_t_r.append(round(n_r, 5))
-        t_r.append(round(get_tr(h_stat, t_reverse_stat, r), 5))
+    t_reverse_stat_lid = create_rev_stat(t_stat_lid)
+    all_events_lid = total_event_num(t_stat_lid)
+    f_lambda = [round(lidstone("unseen-word", t_stat_lid, best_lambda, all_events_lid), 5)]
+    f_h = [round(held_out_estimation("unseen-word", h_stat, h_size, t_stat_ho, t_reverse_stat_ho), 5)]
 
-    # TODO fix f_lambda, f_h
-    f_lambda = [111] * 10
-    f_h = [777] * 10
+    for r in range(1, 10):
+        n_r = len(t_reverse_stat_ho[r])
+        n_t_r.append(n_r)
+
+        t_r.append(round(get_tr(h_stat, t_reverse_stat_ho, r), 5))
+
+        word_r_times_lid = t_reverse_stat_lid[r][0]
+        f_lambda_r = lidstone(word_r_times_lid, t_stat_lid, best_lambda, all_events_lid)
+        f_lambda.append(round(f_lambda_r, 5))
+
+        word_r_times_ho = t_reverse_stat_ho[r][0]
+        f_h_r = held_out_estimation(word_r_times_ho, h_stat, h_size, t_stat_ho, t_reverse_stat_ho)
+        f_h.append(round(f_h_r, 5))
+
     o29 = stringify_table(f_lambda, f_h, n_t_r, t_r)
     res.append(printify(29, o29))
 
