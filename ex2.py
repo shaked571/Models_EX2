@@ -116,6 +116,7 @@ def part2(dev_stat, res):
     o7 = total_event_num(dev_stat)
     res.append(printify(7, o7))
 
+
 def find_best_lambda(validation_stat, training_stat, num_all_events):
     cur_lambda = 0.01
     min_lambda = 0
@@ -129,6 +130,7 @@ def find_best_lambda(validation_stat, training_stat, num_all_events):
         cur_lambda += 0.01
 
     return round(min_lambda, 2), min_perplexity
+
 
 def part3(dev, input_word, res):
     training_set = dev[:int(0.9 * len(dev))]
@@ -345,8 +347,10 @@ def create_r_table(h_stat, h_size, t_reverse_stat_ho, t_stat_ho, t_stat_lid, bes
 
     t_reverse_stat_lid = create_rev_stat(t_stat_lid)
     all_events_lid = total_event_num(t_stat_lid)
-    f_lambda = [round(lidstone("unseen-word", t_stat_lid, best_lambda, all_events_lid), 5)]
-    f_h = [round(held_out_estimation("unseen-word", h_stat, h_size, t_stat_ho, t_reverse_stat_ho), 5)]
+    all_events_ho = total_event_num(t_stat_ho)
+
+    f_lambda = [round(lidstone("unseen-word", t_stat_lid, best_lambda, all_events_lid) * all_events_lid, 5)]
+    f_h = [round(held_out_estimation("unseen-word", h_stat, h_size, t_stat_ho, t_reverse_stat_ho) * all_events_ho, 5)]
 
     for r in range(1, 10):
         n_r = len(t_reverse_stat_ho[r])
@@ -356,11 +360,11 @@ def create_r_table(h_stat, h_size, t_reverse_stat_ho, t_stat_ho, t_stat_lid, bes
 
         word_r_times_lid = t_reverse_stat_lid[r][0]
         f_lambda_r = lidstone(word_r_times_lid, t_stat_lid, best_lambda, all_events_lid)
-        f_lambda.append(round(f_lambda_r, 5))
+        f_lambda.append(round(f_lambda_r * all_events_lid, 5))
 
         word_r_times_ho = t_reverse_stat_ho[r][0]
         f_h_r = held_out_estimation(word_r_times_ho, h_stat, h_size, t_stat_ho, t_reverse_stat_ho)
-        f_h.append(round(f_h_r, 5))
+        f_h.append(round(f_h_r * all_events_ho, 5))
 
     o29 = stringify_table(f_lambda, f_h, n_t_r, t_r)
     res.append(printify(29, o29))
