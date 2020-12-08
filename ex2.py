@@ -220,7 +220,7 @@ def get_unseen_held_out(h_stat, t_stat):
     # t_0
     unseen_sum = 0
     for w_h in h_stat:
-        if t_stat[w_h] == 0:
+        if w_h not in t_stat:
             unseen_sum += h_stat[w_h]
 
     return unseen_sum
@@ -230,7 +230,8 @@ def held_out_estimation(word, h_stat, h_size, t_stat, t_reverse_stat):
     """
     Calculate the probability estimation for a word using Held out
     """
-    r = t_stat[word]
+    # prevent inserting words that don't exist in the training
+    r = t_stat[word] if word in t_stat else 0
     if r == 0:
         n_r = VOCAB_SIZE - len(t_stat)
         t_r = get_unseen_held_out(h_stat, t_stat)
